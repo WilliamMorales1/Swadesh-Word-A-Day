@@ -36,14 +36,15 @@ Uncomment the two `print` lines in `send_word()` and comment out the `requests.p
     {
     "language": "Spanish",
     "entries": [
-      {
-        "english": "I (1sg)",
-        "spanish español": "yo"
-      },
-      {
-        "english": "you (2sg)",
-        "spanish español": "tú, vos, usted (formal)"
-      }
+         {
+           "english": "I (1sg)",
+           "spanish español": "yo"
+         },
+         {
+           "english": "you (2sg)",
+           "spanish español": "tú, vos, usted (formal)"
+         }
+       ]
     }
 ]
 ```
