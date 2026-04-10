@@ -4,28 +4,35 @@ Daily word-of-the-day push notifications drawn from Wiktionary's Swadesh lists, 
 
 ## What it does
 
-* **`get-swadesh.py`** — Scrapes every Swadesh list appendix on Wiktionary (~200+ languages), parses each table into English-keyed word entries, and writes the result to `swadesh_list.json`.
-* **`daily_swadesh_word.py`** — Reads the JSON, picks a random language and word entry, and POSTs two daily notifications to an ntfy.sh topic: one from the full dataset and one filtered to the ~30 most-spoken languages.
+* **`get-swadesh.go`** — Scrapes every Swadesh list appendix on Wiktionary (~200+ languages), parses each table into English-keyed word entries, and writes the result to `swadesh_list.json`. Scraping is parallelized across 8 workers.
+* **`daily_swadesh_word.go`** — Reads the JSON, picks a random language and word entry, and POSTs two daily notifications to an ntfy.sh topic: one from the full dataset and one filtered to the ~30 most-spoken languages.
 
 ## Setup
 
+Install Go (1.25+), then fetch dependencies:
+
 ```bash
-pip install requests beautifulsoup4
+go mod tidy
 ```
 
-1. Run the scraper once to build the dataset:
+1. Set `TOPIC` in `daily_swadesh_word.go` to your ntfy.sh topic name.
+2. Run the program — if `swadesh_list.json` is missing it will scrape Wiktionary automatically before sending notifications:
    ```bash
-   python get-swadesh.py   # produces swadesh_list.json
+   go run .
    ```
-2. Edit `daily_swadesh_word.py` and set `TOPIC` to your ntfy.sh topic name.
-3. Schedule `daily_swadesh_word.py` with cron or a similar scheduler:
+3. Schedule with cron or a similar scheduler:
    ```
-   0 8 * * * python /path/to/daily_swadesh_word.py
+   0 8 * * * /path/to/swadesh-notify
    ```
+   Build the binary with `go build -o swadesh-notify .`
 
-## Testing locally
+## Running
 
-Uncomment the two `print` lines in `send_word()` and comment out the `requests.post` call — it'll print the notification body to stdout instead of sending it.
+```bash
+go run .
+```
+
+If `swadesh_list.json` does not exist, the program scrapes Wiktionary first and writes it. Then it sends two notifications — one drawn from all languages, one filtered to the ~30 most-spoken languages in `targetLanguages`.
 
 ## Data format
 
@@ -33,19 +40,19 @@ Uncomment the two `print` lines in `send_word()` and comment out the `requests.p
 
 ```json
 [
-    {
+  {
     "language": "Spanish",
     "entries": [
-         {
-           "english": "I (1sg)",
-           "spanish español": "yo"
-         },
-         {
-           "english": "you (2sg)",
-           "spanish español": "tú, vos, usted (formal)"
-         }
-       ]
-    }
+      {
+        "english": "I (1sg)",
+        "spanish español": "yo"
+      },
+      {
+        "english": "you (2sg)",
+        "spanish español": "tú, vos, usted (formal)"
+      }
+    ]
+  }
 ]
 ```
 
@@ -53,4 +60,4 @@ Uncomment the two `print` lines in `send_word()` and comment out the `requests.p
 
 * The scraper skips metadata columns (IPA, notes, cognates, etc.) automatically.
 * All text is NFC-normalized throughout.
-* `TARGET_LANGUAGES` in `daily_swadesh_word.py` can be edited freely to change the "common languages" pool.
+* `targetLanguages` in `daily_swadesh_word.go` can be edited freely to change the "common languages" pool.
