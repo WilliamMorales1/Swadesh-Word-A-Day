@@ -12,7 +12,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-const TOPIC = "daily_swadesh_words_hydragon"
+const TOPIC = "swadesh_word_of_the_day"
 const JSON_PATH = "swadesh_list.json"
 
 var targetLanguages = map[string]bool{
